@@ -17,25 +17,12 @@ pip install -r requirements.txt
 Complete structure of repository:
 
 service-points-location-capacity/
-│
-├── README.md
-├── .gitignore
+├── test.py              # File principale per test semplice
+├── scalability.py       # File principale per test scalabilità
 ├── requirements.txt
-├── data/
-│   ├── input/
-│   └── output/
-├── src/
-│   ├── __init__.py
+├── README.md
+├── config.json
+├── src/                 # Codice sorgente
 │   ├── models/
-│   │   ├── __init__.py
-│   │   ├── sp_model.py
-│   │   └── rejection_function.py
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   ├── data_generator.py
-│   │   └── visualization.py
-│   └── main.py
-├── tests/
-│   └── test_model.py
-└── notebooks/
-    └── analysis.ipynb
+│   └── utils/
+└── data/               # Dati e output
