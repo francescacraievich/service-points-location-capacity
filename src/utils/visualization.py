@@ -1,7 +1,7 @@
 """
 Visualization utilities for the SP location problem
 """
-
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import Dict, List, Optional, Tuple
@@ -12,7 +12,7 @@ def plot_network(instance: Dict, figsize: Tuple[int, int] = (12, 10)):
     """
     Plot the network structure showing demand points and candidate locations
     """
-    # [codice esistente rimane uguale]
+    
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     
     # Extract data
@@ -82,7 +82,7 @@ def plot_solution(instance: Dict, solution: Dict,
     """
     Plot the solution showing opened SPs and allocations
     """
-    # [codice esistente rimane uguale]
+    
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=figsize)
     
     # Extract data
@@ -188,7 +188,7 @@ def plot_cost_breakdown(solution: Dict, figsize: Tuple[int, int] = (10, 6)):
     """
     Plot cost breakdown of the solution
     """
-    # [codice esistente rimane uguale]
+
     if not solution.get("summary"):
         print("No summary data available")
         return
@@ -225,58 +225,83 @@ def plot_cost_breakdown(solution: Dict, figsize: Tuple[int, int] = (10, 6)):
     return fig
 
 
-def plot_rejection_function_validation(save_path: Optional[str] = None):
+def plot_rejection_function_validation(output_path):
     """
-    Create Figure 2 from Raviv (2023): Rejection function validation
-    Shows rejections/Cp vs load level ρ for different capacities
+    Create Figure 2 from the paper showing convergence to fluid model
+    Shows rejection rate as function of load (rho) for different capacities
     """
+    import numpy as np
+    import matplotlib.pyplot as plt
     from models.rejection_function import RejectionFunction
     
+    # Create output directory if needed
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
+    # Parameters
+    p = 0.5  # pickup probability
+    capacities = [10, 30, 50, 150]  # Different capacity values
+    
+    # Create figure
     fig, ax = plt.subplots(figsize=(10, 8))
     
-    # Parameters from paper
-    capacities = [10, 30, 50, 150]
-    p = 0.5  # pickup probability
+    # Colors for each capacity
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
     
-    # Range of ρ (load level) from 0 to 2
-    rho_values = np.linspace(0, 2, 100)
-    
-    for C, color in zip(capacities, colors):
-        rf = RejectionFunction(C, p)
-        rejections_normalized = []
+    # Plot for each capacity
+    for i, C in enumerate(capacities):
+        # Create range of rho values (load level)
+        rho_values = np.linspace(0, 2, 500)
+        rejection_rates = []
         
         for rho in rho_values:
-            # λ = ρ * C * p
-            lambda_rate = rho * C * p
-            rejections = rf.expected_rejections(lambda_rate)
-            # Normalize by C*p to get rejections/Cp
-            rejections_normalized.append(rejections / (C * p))
+            # Lambda = rho * C * p
+            lam = rho * C * p
+            
+            # Calculate rejection rate using the rejection function
+            rf = RejectionFunction(C, p)
+            rejections = rf.expected_rejections(lam)
+            
+            # Rejection rate = rejections / (C * p)
+            rejection_rate = rejections / (C * p) if C * p > 0 else 0
+            rejection_rates.append(rejection_rate)
         
-        ax.plot(rho_values, rejections_normalized, 
-                color=color, linewidth=2, label=f'C = {C}')
+        # Plot
+        ax.plot(rho_values, rejection_rates, 
+                label=f'C = {C}', 
+                color=colors[i], 
+                linewidth=2.5)
     
-    # Add fluid approximation (C → ∞)
-    fluid_rejections = np.maximum(0, rho_values - 1)
-    ax.plot(rho_values, fluid_rejections, 'k--', 
-            linewidth=2, label='C → ∞')
+    # Add fluid model (C → ∞)
+    rho_fluid = np.linspace(1, 2, 200)
+    rejection_fluid = rho_fluid - 1  # For rho > 1, rejection rate = rho - 1
+    ax.plot(rho_fluid, rejection_fluid, 
+            'k--', 
+            label='C → ∞', 
+            linewidth=2.5)
     
-    # Formatting to match paper
-    ax.set_xlabel('ρ (load level)', fontsize=12)
-    ax.set_ylabel('Rejections / Cp', fontsize=12)
+    # Formatting
+    ax.set_xlabel('ρ (load level)', fontsize=14)
+    ax.set_ylabel('Rejections / Cp', fontsize=14)
+    ax.set_title('Fig. 2. Convergence to the fluid model (for p = 0.5)', fontsize=16)
+    
+    # Set axis limits
     ax.set_xlim(0, 2)
     ax.set_ylim(0, 0.5)
+    
+    # Grid
     ax.grid(True, alpha=0.3)
-    ax.legend(loc='upper left')
     
-    plt.title('Fig. 2. Convergence to the fluid model (for p = 0.5)', 
-              fontsize=14)
+    # Legend
+    ax.legend(fontsize=12, loc='upper left')
     
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"Rejection function plot saved to {save_path}")
+    # Adjust layout
+    plt.tight_layout()
     
-    return fig
+    # Save
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print(f"Rejection function plot saved to {output_path}")
 
 
 def plot_model_comparison(comparison_results: Dict, save_path: Optional[str] = None):
@@ -350,7 +375,7 @@ def create_summary_report(instance: Dict, solution: Dict,
     """
     Create a comprehensive summary report
     """
-    # [codice esistente rimane uguale - già presente nel file originale]
+   
     fig = plt.figure(figsize=(16, 12))
     
     # Create grid

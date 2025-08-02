@@ -42,7 +42,7 @@ class ScenariosModel(ServicePointModel):
         F_idx = range(len(self.F))
         S_idx = range(len(self.C))
         Sc_idx = range(self.n_scenarios)
-        K_idx = range(self.n_breakpoints)  # IMPORTANTE!
+        K_idx = range(self.n_breakpoints)  
         
         # First-stage: Location decisions
         self.y = self.model.addVars(
@@ -87,7 +87,7 @@ class ScenariosModel(ServicePointModel):
             for f in F_idx:
                 for s in S_idx:
                     for k in K_idx:
-                        # Usa pwl_data invece di rejection_values
+                        
                         expected_rejection_cost += (
                             self.d * self.pwl_data[(s, k)]["rejection_value"] * 
                             self.z[sc][f, s, k] / self.n_scenarios

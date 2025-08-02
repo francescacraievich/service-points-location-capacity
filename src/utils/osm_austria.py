@@ -49,7 +49,7 @@ class AustriaOSMHandler(osmium.SimpleHandler):
     def way(self, w):
         """Extract buildings"""
         if 'building' in w.tags and len(w.nodes) > 0:
-            # Simple check if in bounds (would need full geometry ideally)
+            # Simple check if in bounds 
             self.buildings.append(w.id)
     
     def _in_bounds(self, lon, lat):
@@ -81,7 +81,7 @@ def load_austria_instance(city: str = "Vienna", osm_file: str = None) -> Dict:
     
     print(f"Loading {city} from OSM data: {osm_file}")
     
-    # IMPORTANTE: Crea l'handler PRIMA di usarlo!
+    
     handler = AustriaOSMHandler(city)
     
     # This processes the entire file - may take a minute
@@ -121,7 +121,7 @@ def load_austria_instance(city: str = "Vienna", osm_file: str = None) -> Dict:
     n_demand = min(len(demand_points), handler.CITIES[city]['target_demand_points'])
     n_sp = min(len(sp_locations), handler.CITIES[city]['target_sp_candidates'])
     
-    # Se non ci sono abbastanza SP locations, generane di casuali
+    # create random SP if there are not enough
     if len(sp_locations) < n_sp:
         print(f"Warning: Only found {len(sp_locations)} parking locations, generating random SP locations")
         while len(sp_locations) < n_sp:

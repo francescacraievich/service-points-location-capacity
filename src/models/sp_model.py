@@ -42,7 +42,7 @@ class ServicePointModel:
         # Extract parameters
         self.r = params.get('service_radius', 600)
         self.p = params.get('pickup_probability', 0.5)
-        self.d = params.get('rejection_cost', 10)  # α nel paper diventa d
+        self.d = params.get('rejection_cost', 10)  # α in the paper turns in d
         self.setup_base_cost = params.get('setup_base_cost', 10)
         self.setup_var_cost = params.get('setup_var_cost', 1/6)
         
@@ -111,13 +111,13 @@ class ServicePointModel:
                         "rejection_value": pwl_points['rejection_values'][k_idx]
                     }
                 else:
-                    # Estendi con l'ultimo valore se mancano breakpoints
+                    # Extend with the last value if there are no breakpoints
                     self.pwl_data[(s_idx, k_idx)] = {
                         "lambda_value": pwl_points['lambda_values'][-1] + (k_idx - len(pwl_points['lambda_values']) + 1) * 10,
                         "rejection_value": pwl_points['rejection_values'][-1]
                     }
     
-        # Debug: verifica le chiavi create
+        # Debug
         print(f"PWL data keys created: {len(self.pwl_data)} total")
     
     def _get_setup_cost(self, f: int, s: int) -> float:
@@ -184,14 +184,14 @@ class ServicePointModel:
         
     def _build_objective(self, F_idx, S_idx, K_idx):
         """Build objective function (8) from the paper"""
-        # Setup costs - primo termine dell'equazione (8)
+        # Setup costs - first term(8)
         setup_cost = gp.quicksum(
             self._get_setup_cost(f, s) * self.y[f, s]
             for f in F_idx for s in S_idx
         )
         
-        # Rejection costs - secondo termine dell'equazione (8)
-        # Usa pwl_data invece di rejection_values
+        # Rejection costs - second term (8)
+    
         rejection_cost = gp.quicksum(
             self.d * self.pwl_data[(s, k)]["rejection_value"] * self.z[f, s, k]
             for f in F_idx for s in S_idx for k in K_idx
@@ -201,7 +201,8 @@ class ServicePointModel:
     
     def _add_constraints(self, D_idx, F_idx, S_idx, K_idx):
         """Add all model constraints from the paper"""
-        
+        uncovered_count = 0
+
         # (9) At most one capacity per location
         for f in F_idx:
             self.model.addConstr(
@@ -213,12 +214,32 @@ class ServicePointModel:
         for d in D_idx:
             eligible_sps = [f for f in F_idx if self.distances[(d, f)] <= self.r]
             if not eligible_sps:
-                print(f"Warning: Demand point {d} has no SP within radius!")
-            
-            self.model.addConstr(
-                gp.quicksum(self.x[d, f] for f in eligible_sps) == self.mu[d],
-                name=f"satisfy_demand_{d}"
-            )
+                uncovered_count += 1
+                if uncovered_count <= 10: 
+                    print(f"Warning: Demand point {d} has no SP within radius!")
+                
+                slack = self.model.addVar(lb=0, name=f"slack_{d}")
+                self.model.addConstr(
+                    slack == self.mu[d],
+                    name=f"uncovered_demand_{d}"
+                )
+                # Penalize object function
+                self.model.setObjective(
+                    self.model.getObjective() + 1000000 * slack,
+                    GRB.MINIMIZE
+                )
+            else:
+                self.model.addConstr(
+                    gp.quicksum(self.x[d, f] for f in eligible_sps) == self.mu[d],
+                    name=f"satisfy_demand_{d}"
+                )
+    
+        if uncovered_count > 10:
+            print(f"... and others {uncovered_count - 10} not covered points")
+    
+        if uncovered_count > 0:
+            print(f"\nTOTAL of not covered points: {uncovered_count}/{len(D_idx)} ({uncovered_count/len(D_idx)*100:.1f}%)")
+            print("WARNING: The model may be suboptimal!")
         
         # (11) Closest SP constraint
         for d in D_idx:
@@ -294,7 +315,6 @@ class ServicePointModel:
         elif self.model.Status == GRB.INFEASIBLE:
             print("Model is infeasible!")
             self.model.computeIIS()
-            self.model.write("infeasible.ilp")
             return {"status": "infeasible"}
         
         return self._extract_solution()

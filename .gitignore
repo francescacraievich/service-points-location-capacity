@@ -1,4 +1,4 @@
-## 2. File `.gitignore`:
+
 
 ```gitignore
 # Byte-compiled / optimized / DLL files
@@ -17,7 +17,7 @@ ENV/
 *.mps
 *.sol
 
-# Data outputs (but keep directories)
+# Data outputs 
 data/output/*
 !data/output/.gitkeep
 
@@ -31,8 +31,6 @@ data/output/*
 .DS_Store
 Thumbs.db
 
-# Jupyter Notebook
-.ipynb_checkpoints/
 
 # Python egg files
 *.egg-info/
