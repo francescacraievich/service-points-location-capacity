@@ -9,7 +9,7 @@ This project implements an optimization model for locating and sizing automatic
 parcel lockers (APLs) in urban delivery networks, considering stochastic demand 
 and pickup processes.
 
-## Installation
+## 1. Installation
 ```bash
 pip install -r requirements.txt
 ```
@@ -88,4 +88,5 @@ Supporting utilities:
 Results organized by test type:
 - `test/`: Basic model validation results
 - `scalability/`: Performance analysis with timestamped runs
+
 - `osm/`: OpenStreetMap data files for Austrian cities
