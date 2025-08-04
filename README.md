@@ -63,6 +63,7 @@ Supporting utilities:
 - `data_generator.py`: Create synthetic and realistic test instances
 - `osm_austria.py`: Extract and process real city data from OpenStreetMap
 - `visualization.py`: Generate network plots and analysis charts
+- `extract_cities.py`: Extract individual city files from full Austria OSM dataset
 
 ### data/output/
 Results organized by test type:
@@ -83,4 +84,5 @@ These files are sufficient to run all tests and examples.
 For complete scalability tests with all Austrian cities:
 ```bash
 wget https://download.geofabrik.de/europe/austria-latest.osm.pbf -O data/output/osm/austria-latest.osm.pbf
+
 ```
