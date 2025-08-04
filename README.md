@@ -22,18 +22,24 @@ This repository uses Git LFS for large OSM data files. Install it before cloning
 ```bash
 # Initialize Git LFS 
 git lfs install
+```
 
 # Clone the repository (automatically downloads OSM files)
+```bash
 git clone https://github.com/francescacraievich/service-points-location-capacity.git
 cd service-points-location-capacity
+```
 
+```bash
 # Install dependencies
 pip install -r requirements.txt
+```
 
+```bash
 # Run 
 python test.py          
 python scalability.py   
-
+```
 
 ## Key Files Description
 
