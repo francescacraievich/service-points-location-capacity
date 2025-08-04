@@ -9,51 +9,30 @@ This project implements an optimization model for locating and sizing automatic
 parcel lockers (APLs) in urban delivery networks, considering stochastic demand 
 and pickup processes.
 
-## 1. Installation
-```bash
-pip install -r requirements.txt
-```
+## Installation
 
-### 2. Run basic tests
-Run the main test file to validate the model with a small instance:
+### Git LFS Required
+This repository uses Git LFS for large OSM data files. Install it before cloning:
+
+**Windows:** `winget install GitHub.GitLFS`
+**macOS:** `brew install git-lfs`  
+**Linux:** `sudo apt-get install git-lfs`
+
+### Clone and Run
 ```bash
-python test.py
-```
-### 3. Run scalability tests (optional)
-For comprehensive scalability analysis with real Austrian city data:
-```bash
-python scalability.py
-```
-service-points-location-capacity/
-├── data/                               # Data files and outputs
-│   └── output/                         # Results directory
-│       ├── osm/                        # OpenStreetMap data
-│       │   └── austria-latest.osm.pbf  # OSM data for Austrian cities
-│       ├── scalability/                # Scalability test results
-│       └── test/                       # Basic test outputs
-│           ├── instance.json           # Saved test instance
-│           ├── solution.json           # Solution details
-│           ├── network.png             # Network visualization
-│           ├── figure2_rejection_function.png
-│           └── figure4_model_comparison.png
-├── src/                                # Source code
-│   ├── models/                         # Optimization models
-│   │   ├── __init__.py                 # Package initializer
-│   │   ├── deterministic_model.py      # Deterministic benchmark model
-│   │   ├── rejection_function.py       # Rejection function calculations
-│   │   ├── scenarios_model.py          # Scenario-based stochastic model
-│   │   └── sp_model.py                 # Main PWL stochastic model (Raviv 2023)
-│   └── utils/                          # Utility functions
-│       ├── __init__.py                 # Package initializer
-│       ├── data_generator.py           # Synthetic instance generator
-│       ├── osm_austria.py              # Real data loader from OpenStreetMap
-│       └── visualization.py            # Plotting and visualization tools
-├── .gitignore                          # Git ignore file
-├── config.json                         # Configuration parameters (optional)
-├── README.md                           # Project documentation
-├── requirements.txt                    # Python dependencies
-├── scalability.py                      # Scalability tests with real Austrian data
-└── test.py                             # Main test file and entry point
+# Initialize Git LFS 
+git lfs install
+
+# Clone the repository (automatically downloads OSM files)
+git clone https://github.com/francescacraievich/service-points-location-capacity.git
+cd service-points-location-capacity
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run 
+python test.py          
+python scalability.py   
 
 
 ## Key Files Description
@@ -88,5 +67,18 @@ Supporting utilities:
 Results organized by test type:
 - `test/`: Basic model validation results
 - `scalability/`: Performance analysis with timestamped runs
-
 - `osm/`: OpenStreetMap data files for Austrian cities
+
+## Data Files
+
+The repository includes pre-extracted OSM data for three Austrian cities:
+- `data/output/osm/vienna.osm.pbf` (50MB)
+- `data/output/osm/graz.osm.pbf` (20MB)  
+- `data/output/osm/linz.osm.pbf` (15MB)
+
+These files are sufficient to run all tests and examples.
+
+### Full Austria Dataset (Optional)
+For complete scalability tests with all Austrian cities:
+```bash
+wget https://download.geofabrik.de/europe/austria-latest.osm.pbf -O data/output/osm/austria-latest.osm.pbf

@@ -17,9 +17,6 @@ ENV/
 *.mps
 *.sol
 
-# Data outputs 
-data/output/*
-!data/output/.gitkeep
 
 # IDE specific files
 .vscode/
@@ -36,3 +33,5 @@ Thumbs.db
 *.egg-info/
 dist/
 build/
+
+data\output\osm\austria-latest.osm.pbf

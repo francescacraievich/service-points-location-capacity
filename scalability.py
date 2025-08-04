@@ -45,13 +45,6 @@ class ScalabilityTester:
         """
         
         instances = []
-        osm_file = "data/output/osm/austria-latest.osm.pbf"
-        
-        # Check if file exists
-        if not os.path.exists(osm_file):
-            print(f"WARNING: OSM file not found! {osm_file}")
-            print("Download from: https://download.geofabrik.de/europe/austria-latest.osm.pbf")
-            return []
         
         print("Loading real data from Austrian cities:")
         print("-" * 60)
@@ -63,8 +56,8 @@ class ScalabilityTester:
         for city in cities:
             print(f"\nLoading {city}...")
             try:
-                # Load complete city data
-                full_instance = load_austria_instance(city, osm_file)
+                # Load complete city data - let load_austria_instance handle the file
+                full_instance = load_austria_instance(city)
                 
                 # Create instances of increasing size
                 for pct in percentages:
@@ -193,7 +186,11 @@ class ScalabilityTester:
         instances = self.create_test_instances_from_cities()
         
         if not instances:
-            print("\nNo instances created! Check the OSM file.")
+            print("\nNo instances created! Check the OSM files.")
+            print("Required files:")
+            print("  - data/output/osm/vienna.osm.pbf")
+            print("  - data/output/osm/graz.osm.pbf")
+            print("  - data/output/osm/linz.osm.pbf")
             return
         
         print(f"\n\nTESTING {len(instances)} REAL INSTANCES")

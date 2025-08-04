@@ -2,8 +2,10 @@
 Minimal OSM processor for Austria data following Raviv (2023)
 """
 
+import os
 import osmium
 import numpy as np
+import random
 from typing import Dict, List, Tuple
 from collections import defaultdict
 
@@ -59,41 +61,61 @@ class AustriaOSMHandler(osmium.SimpleHandler):
 
 def load_austria_instance(city: str = "Vienna", osm_file: str = None) -> Dict:
     """
-    Load city data from austria-latest.osm.pbf
+    Load city data from OSM files following Raviv (2023) methodology
     
     Parameters:
     -----------
     city : str
         City name (Vienna, Graz, or Linz)
     osm_file : str, optional
-        Path to the OSM file. If None, tries default location
+        Path to the OSM file. If None, tries city-specific file first,
+        then falls back to full Austria file
     """
-    import os
     
     if osm_file is None:
-        osm_file = "data/osm/austria-latest.osm.pbf"
+        # Try city-specific file first 
+        city_lower = city.lower()
+        city_file = f"data/output/osm/{city_lower}.osm.pbf"
+        full_file = "data/output/osm/austria-latest.osm.pbf"
+        
+        if os.path.exists(city_file):
+            osm_file = city_file
+            print(f"Using city-specific file: {city_file}")
+        elif os.path.exists(full_file):
+            osm_file = full_file
+            print(f"Using full Austria file: {full_file}")
+            print(f"Note: This will be slower. Consider running extract_cities.py to create city-specific files.")
+        else:
+            # Provide helpful error message
+            raise FileNotFoundError(
+                f"OSM file not found. Tried:\n"
+                f"  - {os.path.abspath(city_file)} (city-specific)\n"
+                f"  - {os.path.abspath(full_file)} (full Austria)\n\n"
+                f"To get the data:\n"
+                f"1. For faster loading, run: python src/utils/extract_cities.py\n"
+                f"2. Or download from: https://download.geofabrik.de/europe/austria-latest.osm.pbf\n"
+                f"   and place in: data/output/osm/"
+            )
     
-    if not os.path.exists(osm_file):
-        raise FileNotFoundError(
-            f"OSM file not found at: {osm_file}\n"
-            f"Full path: {os.path.abspath(osm_file)}"
-        )
+    # Check file size to warn user if using large file
+    file_size_mb = os.path.getsize(osm_file) / 1024 / 1024
+    if file_size_mb > 100:
+        print(f"Warning: Large file ({file_size_mb:.0f} MB) - loading may take a minute...")
     
-    print(f"Loading {city} from OSM data: {osm_file}")
-    
+    print(f"Loading {city} from: {osm_file}")
     
     handler = AustriaOSMHandler(city)
     
-    # This processes the entire file - may take a minute
+    # This processes the OSM file
     handler.apply_file(osm_file, locations=True)
     
     # Create 250m grid as in paper
     bounds = handler.bounds
     cell_size = 0.0025  # ~250m in degrees
     
-    # Generate demand points on grid
-    demand_points = []
-    demand_rates = []
+    # Generate ALL grid points (both demand points and SP candidates)
+    all_grid_points = []
+    all_demand_rates = []
     
     lon = bounds[0]
     while lon < bounds[2]:
@@ -102,43 +124,52 @@ def load_austria_instance(city: str = "Vienna", osm_file: str = None) -> Dict:
             # Center of grid cell
             x = (lon + cell_size/2 - (bounds[0]+bounds[2])/2) * 111000
             y = (lat + cell_size/2 - (bounds[1]+bounds[3])/2) * 111000
-            demand_points.append((x, y))
-            demand_rates.append(np.random.uniform(0.5, 10))  # Random demand
+            all_grid_points.append((x, y))
+            all_demand_rates.append(np.random.uniform(0.5, 10))  # Random demand
             lat += cell_size
         lon += cell_size
     
-    # Convert parking locations to meters
-    sp_locations = []
-    center_lon = (bounds[0] + bounds[2]) / 2
-    center_lat = (bounds[1] + bounds[3]) / 2
+    print(f"Generated {len(all_grid_points)} total grid points for {city}")
     
-    for lon, lat in handler.parking[:handler.CITIES[city]['target_sp_candidates']]:
-        x = (lon - center_lon) * 111000
-        y = (lat - center_lat) * 111000
-        sp_locations.append((x, y))
+    # Get target numbers from paper
+    target_demand = handler.CITIES[city]['target_demand_points']
+    target_sp = handler.CITIES[city]['target_sp_candidates']
     
-    # Trim to match paper's numbers
-    n_demand = min(len(demand_points), handler.CITIES[city]['target_demand_points'])
-    n_sp = min(len(sp_locations), handler.CITIES[city]['target_sp_candidates'])
+    # Ensure we don't exceed available points
+    n_demand = min(len(all_grid_points), target_demand)
+    n_sp = min(len(all_grid_points), target_sp)
     
-    # create random SP if there are not enough
-    if len(sp_locations) < n_sp:
-        print(f"Warning: Only found {len(sp_locations)} parking locations, generating random SP locations")
-        while len(sp_locations) < n_sp:
-            x = np.random.uniform(-10000, 10000)
-            y = np.random.uniform(-10000, 10000)
-            sp_locations.append((x, y))
+    # According to Raviv (2023), SP candidates are selected from ALL grid points
+    # So we randomly sample from all grid points for both demand and SP
+    
+    # For demand points: use the first n_demand points (or random sample)
+    if len(all_grid_points) > target_demand:
+        # Randomly sample demand points
+        demand_indices = random.sample(range(len(all_grid_points)), n_demand)
+        demand_points = [all_grid_points[i] for i in demand_indices]
+        demand_rates = [all_demand_rates[i] for i in demand_indices]
+    else:
+        demand_points = all_grid_points[:n_demand]
+        demand_rates = all_demand_rates[:n_demand]
+    
+    # For SP locations: according to paper, sample from ALL grid points
+    if len(all_grid_points) > target_sp:
+        # Randomly sample SP locations from all grid points
+        sp_indices = random.sample(range(len(all_grid_points)), n_sp)
+        sp_locations = [all_grid_points[i] for i in sp_indices]
+    else:
+        sp_locations = all_grid_points[:n_sp]
     
     instance = {
         "city": city,
-        "demand_points": demand_points[:n_demand],
-        "demand_rates": demand_rates[:n_demand],
-        "sp_locations": sp_locations[:n_sp],
+        "demand_points": demand_points,
+        "demand_rates": demand_rates,
+        "sp_locations": sp_locations,
         "service_radius": 300,  # 300m for real instances
         "n_demand_points": n_demand,
         "n_sp_locations": n_sp,
-        "total_demand": sum(demand_rates[:n_demand])
+        "total_demand": sum(demand_rates)
     }
     
-    print(f"Loaded {city}: {n_demand} demand points, {len(sp_locations[:n_sp])} SP candidates")
+    print(f"Loaded {city}: {n_demand} demand points, {n_sp} SP candidates (from {len(all_grid_points)} grid points)")
     return instance
