@@ -100,16 +100,16 @@ class DeterministicModel:
             name="unmet_demand"
         )
         
-        # Objective: setup costs + penalty for unmet demand
-        print("Setting objective (setup costs + penalty for unmet demand)...")
+        # Objective: setup costs + rejection cost (same as stochastic model)
+        print("Setting objective (setup costs + rejection cost)...")
         
-        
-        penalty_cost = 100000  
+        # Use same rejection cost as stochastic model (α)
+        rejection_cost = self.params.get('rejection_cost', 10)
         
         obj = gp.quicksum(
             self._get_setup_cost(f, s) * self.y[f, s]
             for f in F_idx for s in S_idx
-        ) + penalty_cost * gp.quicksum(self.unmet[d] for d in D_idx)
+        ) + rejection_cost * gp.quicksum(self.unmet[d] for d in D_idx)
         
         self.model.setObjective(obj, GRB.MINIMIZE)
         
@@ -255,8 +255,10 @@ class DeterministicModel:
         # Summary
         avg_utilization = sum(sp["utilization"] * sp["capacity"] for sp in solution["service_points"]) / total_capacity if total_capacity > 0 else 0
         
-        # effective cost 
+        # Calculate costs properly 
         actual_setup_cost = sum(sp["setup_cost"] for sp in solution["service_points"])
+        rejection_cost = self.params.get('rejection_cost', 10)
+        actual_rejection_cost = total_unmet * rejection_cost
         
         solution["summary"] = {
             "num_service_points": len(solution["service_points"]),
@@ -267,11 +269,10 @@ class DeterministicModel:
             "avg_utilization": avg_utilization,
             "max_utilization": max(sp["utilization"] for sp in solution["service_points"]) if solution["service_points"] else 0,
             "total_setup_cost": actual_setup_cost,
-            "total_rejection_cost": 0  # No rejections in deterministic
+            "total_rejection_cost": actual_rejection_cost,
+            "expected_total_rejections": total_unmet
         }
         
-        #  If there is unmet demand, use the actual setup cost
-        if total_unmet > 0.001:
-            solution["objective_value"] = actual_setup_cost
+        # Keep the original objective value (setup + rejection costs)
         
         return solution

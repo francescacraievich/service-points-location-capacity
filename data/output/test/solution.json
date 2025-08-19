@@ -1,166 +1,154 @@
 {
   "status": 2,
-  "objective_value": 60244.26709562568,
-  "mip_gap": 7.571632922665401e-07,
-  "runtime": 0.0709998607635498,
+  "objective_value": 45343.58669263826,
+  "mip_gap": 0.0,
+  "runtime": 0.03299999237060547,
   "node_count": 1.0,
   "service_points": [
-    {
-      "location_idx": 0,
-      "location": [
-        100.0,
-        100.0
-      ],
-      "capacity": 30,
-      "setup_cost": 15000.0,
-      "arrival_rate": 20.585614340877704,
-      "utilization": 1.372374289391847,
-      "expected_rejections": 6.510639558803394
-    },
     {
       "location_idx": 1,
       "location": [
         100.0,
-        700.0
+        500.0
       ],
       "capacity": 30,
       "setup_cost": 15000.0,
-      "arrival_rate": 21.08761966019386,
-      "utilization": 1.4058413106795906,
-      "expected_rejections": 6.9653938097278445
+      "arrival_rate": 19.943641861821767,
+      "utilization": 1.3295761241214512,
+      "expected_rejections": 5.936030493938744
     },
     {
       "location_idx": 2,
       "location": [
-        700.0,
+        500.0,
         100.0
       ],
       "capacity": 30,
       "setup_cost": 15000.0,
-      "arrival_rate": 18.796278713008046,
-      "utilization": 1.2530852475338699,
-      "expected_rejections": 4.932762692331981
+      "arrival_rate": 25.34104239231617,
+      "utilization": 1.6894028261544112,
+      "expected_rejections": 10.946060578540934
     },
     {
       "location_idx": 3,
       "location": [
-        700.0,
-        700.0
+        500.0,
+        500.0
       ],
       "capacity": 30,
       "setup_cost": 15000.0,
-      "arrival_rate": 20.49942597388473,
-      "utilization": 1.366628398258982,
-      "expected_rejections": 6.433020007300507
+      "arrival_rate": 35.33694266692137,
+      "utilization": 2.355796177794758,
+      "expected_rejections": 20.67844160117985
     }
   ],
   "allocations": [
     {
       "demand_point": 0,
-      "service_point": 0,
-      "flow": 5.43135321992335,
-      "distance": 0.0
+      "service_point": 1,
+      "flow": 5.469552075152825,
+      "distance": 400.0
     },
     {
       "demand_point": 1,
-      "service_point": 0,
-      "flow": 5.119207559600886,
+      "service_point": 1,
+      "flow": 5.602933696913791,
       "distance": 200.0
     },
     {
       "demand_point": 2,
       "service_point": 1,
-      "flow": 4.164325126078533,
-      "distance": 200.0
+      "flow": 4.416188212488342,
+      "distance": 0.0
     },
     {
       "demand_point": 3,
       "service_point": 1,
-      "flow": 5.373886979282558,
-      "distance": 0.0
+      "flow": 4.454967877266808,
+      "distance": 200.0
     },
     {
       "demand_point": 4,
-      "service_point": 0,
-      "flow": 4.466313968926736,
+      "service_point": 2,
+      "flow": 4.234791602635374,
       "distance": 200.0
     },
     {
       "demand_point": 5,
-      "service_point": 0,
-      "flow": 5.568739592426731,
+      "service_point": 3,
+      "flow": 4.951353545974275,
       "distance": 282.842712474619
     },
     {
       "demand_point": 6,
-      "service_point": 1,
-      "flow": 5.675137589607823,
-      "distance": 282.842712474619
+      "service_point": 3,
+      "flow": 5.1936163801429185,
+      "distance": 200.0
     },
     {
       "demand_point": 7,
-      "service_point": 1,
-      "flow": 5.874269965224946,
-      "distance": 200.0
+      "service_point": 3,
+      "flow": 5.743313288868697,
+      "distance": 282.842712474619
     },
     {
       "demand_point": 8,
       "service_point": 2,
-      "flow": 4.414081183125156,
-      "distance": 200.0
+      "flow": 5.174707543194276,
+      "distance": 0.0
     },
     {
       "demand_point": 9,
       "service_point": 2,
-      "flow": 5.4850182152757165,
-      "distance": 282.842712474619
+      "flow": 4.938683310775556,
+      "distance": 200.0
     },
     {
       "demand_point": 10,
       "service_point": 3,
-      "flow": 5.057325761375891,
-      "distance": 282.842712474619
+      "flow": 4.098280920449686,
+      "distance": 0.0
     },
     {
       "demand_point": 11,
       "service_point": 3,
-      "flow": 5.1115687858498715,
+      "flow": 5.233738650629494,
       "distance": 200.0
     },
     {
       "demand_point": 12,
       "service_point": 2,
-      "flow": 4.869023796838173,
-      "distance": 0.0
+      "flow": 5.256103630499834,
+      "distance": 200.0
     },
     {
       "demand_point": 13,
       "service_point": 2,
-      "flow": 4.028155517769002,
-      "distance": 200.0
+      "flow": 5.736756305211129,
+      "distance": 282.842712474619
     },
     {
       "demand_point": 14,
       "service_point": 3,
-      "flow": 4.405534188985596,
+      "flow": 5.190211416141669,
       "distance": 200.0
     },
     {
       "demand_point": 15,
       "service_point": 3,
-      "flow": 5.924997237673373,
-      "distance": 0.0
+      "flow": 4.926428464714629,
+      "distance": 282.842712474619
     }
   ],
   "summary": {
-    "num_service_points": 4,
-    "total_capacity": 120,
-    "total_demand": 80.96893868796434,
-    "total_flow": 80.96893868796434,
-    "avg_utilization": 1.3494823114660723,
-    "max_utilization": 1.4058413106795906,
-    "total_setup_cost": 60000.0,
-    "total_rejection_cost": 248.41816068163726,
-    "expected_total_rejections": 24.841816068163727
+    "num_service_points": 3,
+    "total_capacity": 90,
+    "total_demand": 80.6216269210593,
+    "total_flow": 80.62162692105932,
+    "avg_utilization": 1.7915917093568734,
+    "max_utilization": 2.355796177794758,
+    "total_setup_cost": 45000.0,
+    "total_rejection_cost": 375.6053267365952,
+    "expected_total_rejections": 37.56053267365952
   }
 }

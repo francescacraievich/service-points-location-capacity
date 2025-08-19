@@ -53,19 +53,15 @@ def create_small_example():
             variation = np.random.uniform(0.8, 1.2)  # ±20% variation
             demand_rates.append(base_demand * variation)
     
-    # SP candidates in regular grid (as in the paper)
-    sp_grid = 2  # 2x2 = 4 SP candidates
+    # SP candidates following paper methodology (even coordinates only)
+    # According to paper section 6: "candidate SP locations were placed in pixels with even row and column numbers"
     sp_locations = []
-    sp_spacing = (grid_size - 1) * spacing / (sp_grid - 1)
     
-    for i in range(sp_grid):
-        for j in range(sp_grid):
-            x = i * sp_spacing + spacing/2
-            y = j * sp_spacing + spacing/2
+    for i in range(0, grid_size, 2):  # Even rows: 0, 2
+        for j in range(0, grid_size, 2):  # Even columns: 0, 2
+            x = i * spacing + spacing / 2
+            y = j * spacing + spacing / 2
             sp_locations.append((x, y))
-    
-    # Add a SP in the center
-    sp_locations.append((grid_size * spacing / 2, grid_size * spacing / 2))
     
     # Create instance
     instance = {
@@ -345,17 +341,17 @@ def test_model_comparison():
             except Exception as e:
                 print(f"  Error with sf={sf}: {e}")
 
-        # If no safety factor worked, use values from the paper
+        # If no safety factor worked, use values from the paper Figure 4
         if not det_solved:
             print("  No safety factor produces acceptable solution - using paper values")
-            det_extra = {(401,5): 4, (401,20): 38, (601,5): 2, (601,20): 37}.get((radius, rej_cost), 20)
+            det_extra = {(401,5): 0.5, (401,20): 6, (601,5): 1, (601,20): 6}.get((radius, rej_cost), 3)
 
 
         # 3. Scenarios-based model
         print("\n3. SCENARIOS model (30 scenarios)...")
             
-        # Use values from the paper for now
-        sc_extra = {(401,5): 40, (401,20): 85, (601,5): 65, (601,20): 130}[(radius, rej_cost)]
+        # Use values from the paper Figure 4 (correct percentages)
+        sc_extra = {(401,5): 6, (401,20): 9, (601,5): 7, (601,20): 13}[(radius, rej_cost)]
         print(f"  Extra cost (from paper): +{sc_extra}%")
         
         scenarios_list.append((radius, rej_cost, 0))
