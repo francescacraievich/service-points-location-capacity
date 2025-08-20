@@ -59,10 +59,12 @@ class DeterministicModel:
         return distances
     
     def _get_setup_cost(self, f: int, s: int) -> float:
-        """Calculate setup cost"""
-        base = self.setup_base_cost
-        variable = self.setup_var_cost * self.C[s]
-        return (base + variable) * 1000
+        """Calculate setup cost
+        Paper uses base=10k$ meaning 10,000$ base cost
+        """
+        base = self.setup_base_cost * 1000  # Convert to thousands
+        variable = self.setup_var_cost * self.C[s] * 1000  # Convert to thousands
+        return base + variable
     
     def build_model(self):
         """Build deterministic MILP model"""
@@ -139,19 +141,20 @@ class DeterministicModel:
                 )
         
         # Capacity constraints WITH SAFETY FACTOR
-    
+        # The safety factor reduces the effective capacity to account for uncertainty
         for f in F_idx:
             arrival = gp.quicksum(
                 self.x[d, f] for d in D_idx if (d, f) in self.x
             )
             
+            # Reduce effective capacity by safety factor
             effective_capacity = gp.quicksum(
-                self.C[s] * self.p * self.y[f, s]
+                self.C[s] * self.p * self.y[f, s] / self.safety_factor
                 for s in S_idx
             )
             
             self.model.addConstr(
-                arrival * self.safety_factor <= effective_capacity,
+                arrival <= effective_capacity,
                 name=f"capacity_{f}"
             )
         
@@ -248,9 +251,9 @@ class DeterministicModel:
             arrival_rate = sp_flows.get(f, 0.0)
             sp["arrival_rate"] = arrival_rate
             
-            # safety factor utilization
-            effective_capacity = sp["capacity"] * self.p
-            sp["utilization"] = (arrival_rate * self.safety_factor) / effective_capacity if effective_capacity > 0 else 0
+            # utilization with safety factor applied to capacity
+            effective_capacity = sp["capacity"] * self.p / self.safety_factor
+            sp["utilization"] = arrival_rate / effective_capacity if effective_capacity > 0 else 0
         
         # Summary
         avg_utilization = sum(sp["utilization"] * sp["capacity"] for sp in solution["service_points"]) / total_capacity if total_capacity > 0 else 0
@@ -273,6 +276,6 @@ class DeterministicModel:
             "expected_total_rejections": total_unmet
         }
         
-        # Keep the original objective value (setup + rejection costs)
+   
         
         return solution

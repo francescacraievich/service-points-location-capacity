@@ -20,7 +20,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from models.sp_model import ServicePointModel
 from models.deterministic_model import DeterministicModel
 from models.scenarios_model import ScenariosModel
-from utils.visualization import plot_network, plot_rejection_function_validation, plot_model_comparison
+from utils.visualization import plot_network, plot_model_comparison
+from models.rejection_function import create_rejection_function_plot
 from utils.data_generator import save_instance, generate_synthetic_instance
 
 
@@ -54,7 +55,7 @@ def create_small_example():
             demand_rates.append(base_demand * variation)
     
     # SP candidates following paper methodology (even coordinates only)
-    # According to paper section 6: "candidate SP locations were placed in pixels with even row and column numbers"
+   
     sp_locations = []
     
     for i in range(0, grid_size, 2):  # Even rows: 0, 2
@@ -203,7 +204,9 @@ def test_rejection_function():
     print("="*60)
     
     try:
-        plot_rejection_function_validation("data/output/test/figure2_rejection_function.png")
+        # Use the DTMC implementation 
+        fig = create_rejection_function_plot()
+        fig.savefig("data/output/test/figure2_rejection_function.png", dpi=150, bbox_inches='tight')
         print("Figure 2 (Rejection function) saved successfully!")
     except Exception as e:
         print(f"Error creating Figure 2: {e}")
@@ -319,7 +322,7 @@ def test_model_comparison():
                 model_det.build_model()
                 sol_det = model_det.solve(time_limit=300, mip_gap=0.01)
         
-                # Check if solution is valid (not infeasible and without too much unmet demand)
+                # Check if solution is valid 
                 if sol_det.get('status') != 'infeasible':
                     unmet_demand = sol_det.get('summary', {}).get('unmet_demand', 0)
             
@@ -350,7 +353,7 @@ def test_model_comparison():
         # 3. Scenarios-based model
         print("\n3. SCENARIOS model (30 scenarios)...")
             
-        # Use values from the paper Figure 4 (correct percentages)
+        # Use values from the paper Figure 4 
         sc_extra = {(401,5): 6, (401,20): 9, (601,5): 7, (601,20): 13}[(radius, rej_cost)]
         print(f"  Extra cost (from paper): +{sc_extra}%")
         
@@ -415,11 +418,11 @@ if __name__ == "__main__":
     print("\n" + "="*60)
     print("ALL TESTS COMPLETED!")
     print("\nCheck the folder data/output/test/ for results:")
-    print("  ✓ network.png - Network visualization")
-    print("  ✓ instance.json - Instance data")
-    print("  ✓ solution.json - Optimal solution")
-    print("  ✓ figure2_rejection_function.png - Figure 2 from the paper")
-    print("  ✓ figure4_model_comparison.png - Figure 4 from the paper")
+    print("  network.png - Network visualization")
+    print("  instance.json - Instance data")
+    print("  solution.json - Optimal solution")
+    print("  figure2_rejection_function.pn")
+    print("  figure4_model_comparison.png ")
     print("\nFor tests with real data (Vienna, Graz, Linz), use scalability.py")
     print("="*60)
     

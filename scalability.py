@@ -113,7 +113,7 @@ class ScalabilityTester:
             'rejection_cost': 10,  # α = 10 as in main test in the paper
             'setup_base_cost': 10,
             'setup_var_cost': 1/6,
-            'n_breakpoints': 8 if instance['n_demand_points'] > 1000 else 11
+            'n_breakpoints': 20 if instance['n_demand_points'] > 5000 else 15 if instance['n_demand_points'] > 1000 else 12
         }
         
         capacities = [30, 60, 90]  # S = {30, 60, 90} from the paper

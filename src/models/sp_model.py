@@ -62,9 +62,9 @@ class ServicePointModel:
         self.model = gp.Model("SP_Location_Capacity")
         
         # Decision variables (to be created)
-        self.y = None  # Binary: open SP
-        self.x = None  # Continuous: flow
-        self.z = None  # Continuous: PWL approximation
+        self.y = None  # Binary variables: SP locations/capacities
+        self.x = None  # Flow variables: demand allocation
+        self.z = None  # PWL approximation variables
         
     def _calculate_distances(self) -> Dict[Tuple[int, int], float]:
         """Calculate Euclidean distances between all points"""
@@ -100,7 +100,7 @@ class ServicePointModel:
                 n_points=self.n_breakpoints
             )
         
-            # Debug info
+            # Progress tracking
             print(f"  Capacity {capacity}: {len(pwl_points['lambda_values'])} breakpoints generated")
         
             # Store data for each breakpoint
@@ -117,15 +117,17 @@ class ServicePointModel:
                         "rejection_value": pwl_points['rejection_values'][-1]
                     }
     
-        # Debug
+        # Summary
         print(f"PWL data keys created: {len(self.pwl_data)} total")
     
     def _get_setup_cost(self, f: int, s: int) -> float:
-        """Calculate setup cost for location f with capacity s"""
-        base = self.setup_base_cost
-        variable = self.setup_var_cost * self.C[s]
-        location_factor = 1.0  # Could add location-specific factor
-        return (base + variable) * location_factor * 1000
+        """Calculate setup cost for location f with capacity s
+        Paper uses base=10k$ meaning 10,000$ base cost
+        """
+        base = self.setup_base_cost * 1000  # Convert to thousands
+        variable = self.setup_var_cost * self.C[s] * 1000  # Convert to thousands
+        location_factor = 1.0  # Location-specific factor (currently uniform)
+        return (base + variable) * location_factor
     
     def build_model(self):
         """Build the complete MILP model following Raviv (2023)"""
@@ -216,7 +218,7 @@ class ServicePointModel:
             if not eligible_sps:
                 uncovered_count += 1
                 if uncovered_count <= 10: 
-                    print(f"Warning: Demand point {d} has no SP within radius!")
+                    print(f"Uncovered demand point {d} (no SP within {self.r}m)")
                 
                 slack = self.model.addVar(lb=0, name=f"slack_{d}")
                 self.model.addConstr(
@@ -239,7 +241,7 @@ class ServicePointModel:
     
         if uncovered_count > 0:
             print(f"\nTOTAL of not covered points: {uncovered_count}/{len(D_idx)} ({uncovered_count/len(D_idx)*100:.1f}%)")
-            print("WARNING: The model may be suboptimal!")
+            print("Model includes penalty terms for uncovered points")
         
         # (11) Closest SP constraint
         for d in D_idx:
@@ -389,7 +391,7 @@ class ServicePointModel:
             
             # Add warning if utilization > 100%
             if sp["utilization"] > 1.0:
-                print(f"WARNING: SP at {sp['location']} has utilization {sp['utilization']:.1%} > 100%!")
+                print(f"SP at {sp['location']}: utilization {sp['utilization']:.1%} (overloaded)")
                 print(f"  Arrival rate: {arrival_rate:.2f}, Effective capacity: {effective_capacity:.2f}")
         
         # Summary statistics
@@ -409,9 +411,8 @@ class ServicePointModel:
         
         # Verify solution feasibility
         if solution["summary"]["max_utilization"] > 1.0:
-            print("\nWARNING: Solution has overloaded SPs!")
-            print(f"Maximum utilization: {solution['summary']['max_utilization']:.1%}")
-            print("This is NORMAL in Raviv's model - rejections handle overflow.")
+            print(f"\nOverloaded SPs detected (max utilization: {solution['summary']['max_utilization']:.1%})")
+            print("Rejections will handle overflow as per Raviv's model")
         
         # Diagnostica rejections
         print(f"\nDiagnostica rejections:")
@@ -419,7 +420,7 @@ class ServicePointModel:
             print(f"SP at {sp['location']}:")
             print(f"  Capacity: {sp['capacity']}")
             print(f"  Arrival rate: {sp['arrival_rate']:.2f}")
-            print(f"  Load ratio ρ: {sp['arrival_rate']/(sp['capacity']*self.p):.2f}")
+            print(f"  Load ratio rho: {sp['arrival_rate']/(sp['capacity']*self.p):.2f}")
             print(f"  Expected rejections: {sp['expected_rejections']:.2f}")
             
         return solution
