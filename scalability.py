@@ -265,8 +265,7 @@ class ScalabilityTester:
         print("  - Worst-case complexity: O(2^(m×|S|)) - EXPONENTIAL")
         
         
-        print("\nEMPIRICAL BEHAVIOR (from solver performance):")
-        print("-"*40)
+    
         
         # Polynomial fit to estimate empirical behavior (NOT true complexity)
         if len(df) >= 5:
