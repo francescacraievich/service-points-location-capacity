@@ -167,8 +167,8 @@ def print_solution(solution):
             print(f"\n  SP{i+1}:")
             print(f"    - Location: {sp['location']}")
             print(f"    - Capacity (C_s): {sp['capacity']}")
-            print(f"    - Arrival rate (λ): {sp['arrival_rate']:.2f}")
-            print(f"    - Utilization (ρ): {sp['utilization']:.1%}")
+            print(f"    - Arrival rate (lambda): {sp['arrival_rate']:.2f}")
+            print(f"    - Utilization (rho): {sp['utilization']:.1%}")
             print(f"    - Expected rejections: {sp['expected_rejections']:.2f}")
 
 
