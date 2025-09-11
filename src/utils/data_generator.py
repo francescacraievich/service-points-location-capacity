@@ -305,67 +305,6 @@ def load_osm_instance(osm_file: str, city: str = "Vienna") -> Dict:
     dict
         Instance data
     """
-    from .osm_processor import extract_city_data, aggregate_to_grid, CITY_BOUNDS
+    from .osm_austria import load_austria_instance
     
-    if city not in CITY_BOUNDS:
-        raise ValueError(f"Unknown city: {city}")
-    
-    print(f"Extracting {city} data from OSM...")
-    
-    # Extract raw data
-    city_data = extract_city_data(osm_file, city, CITY_BOUNDS[city])
-    
-    print(f"Found {len(city_data['demand_points'])} demand sources")
-    print(f"Found {len(city_data['sp_candidates'])} SP candidates")
-    
-    # Aggregate to grid as in paper
-    demand_points = aggregate_to_grid(
-        city_data['demand_points'], 
-        cell_size=250,  # 250m cells as in paper
-        bounds=CITY_BOUNDS[city]
-    )
-    
-    # Convert coordinates to meters (local projection)
-    # For simplicity, using approximate conversion
-    center_lat = (CITY_BOUNDS[city][1] + CITY_BOUNDS[city][3]) / 2
-    meters_per_degree = 111000 * np.cos(np.radians(center_lat))
-    
-    # Convert to local coordinates in meters
-    center_lon = (CITY_BOUNDS[city][0] + CITY_BOUNDS[city][2]) / 2
-    
-    demand_points_meters = []
-    for p in demand_points:
-        x = (p['x'] - center_lon) * meters_per_degree
-        y = (p['y'] - center_lat) * 111000
-        demand_points_meters.append((x, y))
-    
-    sp_locations_meters = []
-    for sp in city_data['sp_candidates']:
-        x = (sp['lon'] - center_lon) * meters_per_degree
-        y = (sp['lat'] - center_lat) * 111000
-        sp_locations_meters.append((x, y))
-    
-    # Create instance
-    instance = {
-        "city": city,
-        "source": "OpenStreetMap",
-        "demand_points": demand_points_meters,
-        "demand_rates": [p['demand_rate'] for p in demand_points],
-        "sp_locations": sp_locations_meters,
-        "service_radius": 300,  # 300m as in paper for real instances
-        "total_demand": sum(p['demand_rate'] for p in demand_points),
-        "n_demand_points": len(demand_points_meters),
-        "n_sp_locations": len(sp_locations_meters),
-        "metadata": {
-            "cell_size": 250,
-            "bounds": CITY_BOUNDS[city],
-            "extraction_date": datetime.now().isoformat()
-        }
-    }
-    
-    print(f"\nProcessed {city} instance:")
-    print(f"  - {len(demand_points_meters)} demand cells")
-    print(f"  - {len(sp_locations_meters)} SP candidates")
-    print(f"  - Total demand: {instance['total_demand']:.1f}")
-    
-    return instance
+    return load_austria_instance(city=city, osm_file=osm_file)
