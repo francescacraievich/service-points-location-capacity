@@ -250,8 +250,8 @@ class ScalabilityTester:
         self.create_scalability_plots(df)
         
         # Computational complexity analysis
-        print("\n\nCOMPLEXITY ANALYSIS:")
-        print("-"*60)
+        
+        print("-"*40)
         
         print("THEORETICAL COMPLEXITY:")
         print("-"*40)
@@ -299,21 +299,10 @@ class ScalabilityTester:
             if coeffs_n_large[0] > 0:
                 print(f"\nLarge instances (n > 1000):")
                 print(f"  Empirical: time ∝ n^{coeffs_n_large[0]:.2f}")
-                print(f"  Based on n×m: time ∝ (n×m)^{coeffs_nm_large[0]:.2f}")
             
-            print("\n" + "-"*60)
-            print("IMPORTANT NOTES:")
-            print("1. The empirical O(n^{:.2f}) is NOT the true complexity".format(coeffs_n[0]))
-            print("2. This reflects solver performance on 'easy' instances")
-            print("3. True worst-case remains EXPONENTIAL")
-            print("4. Modern MILP solvers use:")
-            print("   - Branch-and-bound with smart heuristics")
-            print("   - Cutting planes to tighten bounds")
-            print("   - Presolve to reduce problem size")
-            print("5. Performance depends heavily on:")
-            print("   - Problem structure (spatial clustering helps)")
-            print("   - Tightness of LP relaxation")
-            print("   - Quality of initial solution")
+            
+            
+        
     
     def create_scalability_plots(self, df):
         """Create scalability plots as in the paper"""
